@@ -1,0 +1,90 @@
+<html lang="en">
+	<head>
+		<meta charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="Format/Format.css"> 
+		<link rel="icon" type="image/x-icon" href="Format/images/favicon.ico">
+		<title>Chlorine Carrots</title>
+		<!--made by NaatieOdd#2612-->
+	</head>
+	
+	<body>
+		<!-- HTML form for user registration -->
+		<form method="post" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
+			<label for="username">Username:</label>
+			<input type="text" name="username" id="username" required><br>
+
+			<label for="email">Email:</label>
+			<input type="email" name="email" id="email" required><br>
+
+			<label for="password">Password:</label>
+			<input type="password" name="password" id="password" required><br>
+
+			<input type="submit" value="Sign Up">
+		</form>
+	</body>
+<?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Retrieve the form data
+    $username = $_POST["username"];
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+
+    // Validate the form data
+    $errors = [];
+
+    // Validate username
+    if (empty($username)) {
+        $errors[] = "Username is required";
+    }
+
+    // Validate email
+    if (empty($email)) {
+        $errors[] = "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format";
+    }
+
+    // Validate password
+    if (empty($password)) {
+        $errors[] = "Password is required";
+    }
+
+    // If there are no errors, proceed with registration
+    if (empty($errors)) {
+        // Hash the password (using PHP's built-in password_hash() function)
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // Store the user data in the database
+        // Replace this with your own database connection code
+        $connection = new mysqli("localhost:3306", "root", "ikhouvansanne", "DPdatabase");
+        if ($connection->connect_error) {
+            die("Connection failed: " . $connection->connect_error);
+        }
+
+        // Create the SQL query to insert the user data
+        $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$hashedPassword')";
+
+        if ($connection->query($sql) === true) {
+            // Registration successful
+            echo "Registration successful!";
+            // You can redirect the user to another page here
+        } else {
+            // Registration failed
+            echo "Error: " . $sql . "<br>" . $connection->error;
+        }
+
+        $connection->close();
+    } else {
+        // Display the validation errors
+        foreach ($errors as $error) {
+            echo $error . "<br>";
+        }
+    }
+}
+?>
